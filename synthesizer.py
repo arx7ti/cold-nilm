@@ -1174,11 +1174,6 @@ def create_multiple_examples(idx, config, patterns, signal_duration=5,
             transform_spec=transform_spec,
             transform_features=transform_features)
 
-#         if representation > 5:
-#             break
-#         if idx > 5:
-#             break
-
         saver(idx, representation, example)
 
     return None
