@@ -1,0 +1,26 @@
+# Baseline
+numpy
+pandas
+sklearn
+matplotlib
+seaborn
+tqdm
+
+# Signal processing
+scipy
+librosa
+
+# Neural Networks 
+torch
+torchaudio
+tensorboardX
+pytorch-lightning
+
+# Hyperparameters search
+ray
+
+# Extra
+pathos
+lmfit
+tabulate
+numba
