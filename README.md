@@ -2,7 +2,7 @@
 
 _for Non-Intrusive Load Monitoring_
 
-**Summary:** This is a code repository for the paper **Concurrent Loads Disaggregator for Non-Intrusive Load Monitoring** (arXiv:2106.02352). We developed the _Synthesizer of Normalized Signatures_ (SNS) algorithm to simulate the aggregated consumption of a various number of appliances. This algorithm takes signatures of individual appliances (i.e. current and voltage) and converts them into European system (311 V, 50 Hz etc.). Then, the schedule (i.e. which appliances will work together) is randomly sampled from uniform distribution. Finally, corresponding signatures are being aligned by the reference voltage and summed up. This repo also includes implementation of the neural network architecture proposed. We wrap the training&testing pipeline into the Pytorch Lightning framework.
+**Summary:** This is a code repository for the paper [**Concurrent Loads Disaggregator for Non-Intrusive Load Monitoring**](https://arxiv.org/abs/2106.02352) (arXiv:2106.02352). We developed the _Synthesizer of Normalized Signatures_ (SNS) algorithm to simulate the aggregated consumption of a various number of appliances. This algorithm takes signatures of individual appliances (i.e. current and voltage) and converts them into European system (311 V, 50 Hz etc.). Then, the schedule (i.e. which appliances will work together) is randomly sampled from uniform distribution. Finally, corresponding signatures are being aligned by the reference voltage and summed up. This repo also includes implementation of the neural network architecture proposed. We wrap the training&testing pipeline into the Pytorch Lightning framework.
 
 **P.S.** this repo is under the active development.
 
