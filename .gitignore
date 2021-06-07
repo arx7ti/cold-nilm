@@ -133,3 +133,7 @@ dmypy.json
 synthetic/
 logs/
 checkpoints/
+README.org
+
+# nix
+.direnv/
