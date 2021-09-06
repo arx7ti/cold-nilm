@@ -14,13 +14,14 @@ librosa
 torch
 torchaudio
 tensorboardX
+neptune-client
 pytorch-lightning
 
-# Hyperparameters search
-ray
+# Hyper-parameters search
+ray[tune]
 
 # Extra
 pathos
 lmfit
-tabulate
 numba
+beartype
