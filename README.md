@@ -1,42 +1,129 @@
 # Concurrent Loads Disaggregator
-
 _for Non-Intrusive Load Monitoring_
 
-**Summary:** This is a code repository for the paper [**Concurrent Loads Disaggregator for Non-Intrusive Load Monitoring**](https://arxiv.org/abs/2106.02352) (arXiv:2106.02352). We developed the _Synthesizer of Normalized Signatures_ (SNS) algorithm to simulate the aggregated consumption of a various number of appliances. This algorithm takes signatures of individual appliances (i.e. current and voltage) and converts them into European system (311 V, 50 Hz etc.). Then, the schedule (i.e. which appliances will work together) is randomly sampled from uniform distribution. Finally, corresponding signatures are being aligned by the reference voltage and summed up. This repo also includes implementation of the neural network architecture proposed. We wrap the training&testing pipeline into the Pytorch Lightning framework.
-
-**P.S.** this repo is under the active development.
+**Summary:** This is a code repository for the paper [**Concurrent Loads Disaggregator for Non-Intrusive Load Monitoring**](https://arxiv.org/abs/2106.02352) (arXiv:2106.02352). We developed the _Synthesizer of Normalized Signatures_ (SNS) algorithm to simulate the aggregated consumption of a various number of appliances. This algorithm takes signatures of individual appliances (i.e. current and voltage) and converts them into European system (311 V, 50 Hz etc.). Then, the schedule (i.e. which appliances will work together) is randomly sampled from uniform distribution. Finally, corresponding signatures are being aligned by the reference voltage and summed up. This repo also includes implementation of the neural network architecture proposed. We wrap the training & testing pipeline into the Pytorch Lightning framework.
 
 **Keywords**: _signal decomposition, energy disaggregation, nilm, simultaneous appliances, concurrent loads, synthetic data, neural network_
 
+![COLD architecture](/plots/cold.png)
+
 ## Installation
-
 Clone this repository:
-
 ```
 git clone https://github.com/arx7ti/cold-nilm.git
 ```
 
-**[Optional]** We used the `nix-shell` only for CUDA support and Jupyter environment. Some of the nix packages were incompatible and we decided to use virtual environment within nix-shell. You can activate it via:
-
-```
-nix-shell default.nix
-```
-
 The required packages can be installed via standard Python package manager:
-
 ```
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-The full examples of the code with the experiments of the paper are in corresponding notebooks:
+## Guideline
+Tree of the project
+```
+notebooks
+├── Results.ipynb
+├── Statistics.ipynb
+source
+├── __init__.py
+├── wrappers.py
+├── synthesizer.py
+├── data.py
+├── model.py
+└── utils.py
+main.py
+```
 
-1.  The UK-DALE and REDD datasets statistics: `UK-DALE and REDD statistics.ipynb`
-2.  The use of SNS algorithm: `SNS algorithm.ipynb`
-3.  The neural network training and testing: `Concurrent Loads Disaggregator (COLD).ipynb`
+This repository contains following configuration files
+1. **configs/sns.ini** defines parameters of the SNS algorithm to fully reproduce the dataset simulated in the paper;
+2. **configs/tuner.ini** defines hyper-parameters space for the model selection procedure as well as meta parameters of the model (`w_max`, augmentation etc.);
+3. **configs/model.ini** defines optimal hyper-parameters obtained after model selection procedure. This file will be rewritten automatically once the tuner is done. 
+
+**NOTE:** For logging purposes during the training you can add `neptune_api_key` and `neptune_project` keys to the **[extra]** section of the **configs/tuner.ini** or **configs/model.ini** and pass the argument `-tl neptune`.
+
+The **main.py** has 3 sections:
+1. **run-sns** to generate the synthetic datasets for train, validation and test:
+```
+python main.py run-sns -j -1
+```
+
+2. **run-tuner** [optional] to find the best model hyper-parameters. It took us about 1 day to iterate over the 100 trials on 2 RTX 2080Ti GPUs and Ryzen 3900X CPU.
+```
+python main.py run-tuner -j 5 -g 0.5 -t 100 -e 100 -es 10 -gp 5 -dl y
+```
+
+3. **run-model** can be used to train the model from scratch with hyper-parameters set in the **configs/model.ini**: 
+```
+python main.py run-model -j -1 -g 2 -e 100 -es 10 -dl y --train y
+```
+To resume the training after an interruption pass the following flag: `--resume y`
+or to test the model with weights given in the configuration file:
+```
+python main.py run-model -j -1 -g 1 
+```
+
+You are also allowed to test the model under different values of `w_max`:
+```
+python main.py run-model -j -1 -g 1 --override-w-max 3
+```
+Once the model is tested the plots will be available in the model's folder.
+
+## Notebooks
+Several Jupyter notebooks are available in the **notebooks** directory:
+1. **notebooks/Results.ipynb** comprises values obtained in the Results section of the paper;
+2. **notebooks/Statistics.ipynb** shows more detailed statistics on the UK-DALE and REDD datasets.
+
+## Data format
+**Fig. 2** Example of the synthesized measurement signal and its spectrogram
+<p align="center">
+      <img src="/plots/signal.png" width=45%><img src="/plots/spectrogram.png" width=45%>
+</p>
+
+## Results
+Training from scratch takes 1.5-2.5 hours with use of 2 RTX 2080Ti. Example of the output after the model's test:
+```
+test_weighted_mean_f1 = 82.86%
+test_mean_f1_w=1 = 94.63%
+test_mean_f1_w=2 = 92.40%
+test_mean_f1_w=3 = 89.09%
+test_mean_f1_w=4 = 86.24%
+test_mean_f1_w=5 = 83.15%
+test_mean_f1_w=6 = 80.84%
+test_mean_f1_w=7 = 78.57%
+test_mean_f1_w=8 = 76.31%
+test_mean_f1_w=9 = 74.58%
+test_mean_f1_w=10 = 72.79%
+...
+Under the optimal threshold = 0.6552
+```
+
+Comparison table
+| Approach            | Dataset            | Model               | Appliances | `w_max` | F1-score, %           | 
+| :-------------------| :----------------- | :------------------ | :--------- | :------ | :-------------------- | 
+| Faustine et al. [1] | PLAID (aggregated) | CNN                 | 12         | 3       | 94.00 (macro)         | 
+| Ours                | Generated by SNS   | FFNs+self attention | 54         | 10      | 82.86 (mean&weighted) | 
+
+**Fig. 3** Distribution of mean F1-score across different number of concurrent appliances
+<p align="center">
+      <img src="/plots/per_w.png" width=50%>
+</p>
+
+**Fig. 4** Distribution of F1-score across different appliances
+<p align="center">
+      <img src="/plots/per_label.png">
+</p>
+      
+## Docs
+### Configuration files
+- **configs/model.ini**: the model hyper-parameters define a hash value to prevent the models for being overlapped during multiple training/testing attempts. The `threshold` option doesn't contribute to the hash value, this parameter is being computed during the validation and established for the test procedure. It can be replaced by your own value, that is the test results will be given under your threshold. Option `weights` is used only with argument `--train n` and will override the optimal weights if any (best checkpoint still preserved, but not used during that test). 
+
+### Command line arguments
+- **run-model**: `--override-w-max` will override `w_max` of the `ModelCOLD` class only for the current test (even the test which goes right after the training).  
+
 
 ## Cite our paper
-
+*Paper is under the review*, the preprint is available at:
 ```
 @misc{kamyshev2021cold,
       title={COLD: Concurrent Loads Disaggregator for Non-Intrusive Load Monitoring},
@@ -47,3 +134,6 @@ The full examples of the code with the experiments of the paper are in correspon
       primaryClass={eess.SP}
 }
 ```
+
+## References
+[1] Faustine, Anthony, and Lucas Pereira. "Multi-Label Learning for Appliance Recognition in NILM Using Fryze-Current Decomposition and Convolutional Neural Network." Energies 13.16 (2020): 4154.
