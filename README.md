@@ -61,11 +61,13 @@ python main.py run-tuner -j 5 -g 0.5 -t 100 -e 100 -es 10 -gp 5 -dl y
 ```
 python main.py run-model -j -1 -g 2 -e 100 -es 10 -dl y --train y
 ```
-To resume the training after an interruption pass the following flag: `--resume y`
-or to test the model with weights given in the configuration file:
+To resume the training after an interruption pass the following flag: `--resume y`.
+
+To test the model with `weights` given in the configuration file:
 ```
 python main.py run-model -j -1 -g 1 
 ```
+[Download weights from Google Drive [64 MB]](https://drive.google.com/file/d/1a1Mow9w4OMHCx4Dzk4rrukDqCX32czwS/view?usp=sharing)
 
 You are also allowed to test the model under different values of `w_max`:
 ```
