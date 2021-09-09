@@ -24,7 +24,7 @@ Tree of the project
 ```
 notebooks
 ├── Results.ipynb
-├── Statistics.ipynb
+└── Statistics.ipynb
 configs
 ├── sns.ini
 ├── tuner.ini
